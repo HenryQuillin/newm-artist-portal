@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { getInitialData } from "modules/session";
 import { useTheme } from "@mui/material/styles";
 import MenuIcon from "@mui/icons-material/Menu";
+import ReactPDF from "@react-pdf/renderer";
 import SideBar from "./SideBar";
 import UploadSong from "./uploadSong/UploadSong";
 import Library from "./library/Library";
@@ -12,6 +13,7 @@ import Owners from "./owners/Owners";
 import Wallet from "./wallet/Wallet";
 import Analytics from "./analytics/Analytics";
 import Profile from "./profile/Profile";
+import MintSongAgreement from "./uploadSong/MintSongAgreement";
 
 const Home: FunctionComponent = () => {
   const drawerWidth = 240;
@@ -20,14 +22,38 @@ const Home: FunctionComponent = () => {
 
   const dispatch = useDispatch();
 
+  const [pdfLink, setPdfLink] = useState("");
+
   useEffect(() => {
     dispatch(getInitialData());
   }, [dispatch]);
 
+  useEffect(() => {
+    const renderUrl = async () => {
+      const blob = await ReactPDF.pdf(
+        <MintSongAgreement
+          songName="Californication"
+          companyName="Capital Records"
+          artistName="Elvis Presley"
+          stageName="Modonna"
+        />
+      ).toBlob();
+      const url = URL.createObjectURL(blob);
+
+      setPdfLink(url);
+    };
+
+    renderUrl();
+  }, []);
+
   const [isMobileOpen, setMobileOpen] = useState(false);
   return (
     <Box
-      sx={ { backgroundColor: theme.colors.black100, display: "flex", flexGrow: 1 } }
+      sx={ {
+        backgroundColor: theme.colors.black100,
+        display: "flex",
+        flexGrow: 1,
+      } }
     >
       <SideBar
         isMobileOpen={ isMobileOpen }
@@ -48,6 +74,12 @@ const Home: FunctionComponent = () => {
             <MenuIcon sx={ { color: "white" } } />
           </IconButton>
         </Box>
+
+        <h1>Download</h1>
+        <a href={ pdfLink } download>
+          Download
+        </a>
+
         <Routes>
           <Route path="" element={ <Navigate to="upload-song" replace /> } />
 
